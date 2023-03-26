@@ -17,42 +17,18 @@ Canvas::Canvas(QWidget *parent)
 
 void Canvas::mousePressEvent(QMouseEvent *e)
 {
-    //qInfo("Oh");
-    //draw();
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *e)
 {
-    //x = e->position().x();
-    //y = e->position().y();
-    //if (Move_flag == 1)
-    //{
-    //    this->update();
-    //}
-    //else {
-    //    Move_flag = 1;
-    //    x_old = x;
-    //    y_old = y;
-    //}
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *e)
 {
-    //Q_UNUSED(e);
-    //Move_flag = 0;
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
 {
-    //Q_UNUSED(event);
-
-    //QPainter painter(image);
-    //painter.setPen(QColor(255, 0, 0));
-    //painter.drawLine(QPointF(x_old, y_old), QPointF(x, y));
-    //x_old = x;
-    //y_old = y;
-    //QPainter painter1(this);
-    //painter1.drawImage(0, 0, *image);
     draw();
 }
 
@@ -69,7 +45,6 @@ void Canvas::draw()
     {
         ptr[i] = 0;
     }
-    update();
     QPainter painter(image);
     float a = 1. / qTan(0.5 * qDegreesToRadians(45));
     auto tf = QMatrix4x4(a, 0, 0, 0, 0, a, 0, 0, 0, 0, -1, 0, 0, 0, -1, 0);
@@ -77,10 +52,11 @@ void Canvas::draw()
     {
         for (int j = 0; j < 3; ++j)
         {
-            int rgb = 255 - qMax(0, qMin(255, (int)((model->vert(i, j).z + 1.) / 2. * 255.)));
+            int k = (j + 1) % 3;
+            int rgb = 255 - qMax(0, qMin(255, (int)(((model->vert(i, j).z + model->vert(i, k).z) * .5 + 1.) / 2. * 255.)));
             painter.setPen(QColor(rgb, rgb, rgb));
             painter.drawLine(vec3ToQPointF(model->vert(i, j), tf),
-                             vec3ToQPointF(model->vert(i, (j + 1) % 3), tf));
+                     vec3ToQPointF(model->vert(i, k), tf));
         }
         //auto path = QPainterPath();
         //auto poly = QPolygonF(QList<QPointF> {

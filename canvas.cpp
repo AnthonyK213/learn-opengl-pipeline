@@ -1,3 +1,5 @@
+#define DELETE(x) if(nullptr!=x)delete x;
+
 #include <QDebug>
 #include <QMatrix4x4>
 #include <vector>
@@ -18,19 +20,8 @@ Canvas::Canvas(QWidget *parent)
 
 Canvas::~Canvas()
 {
-    if (nullptr != image)
-    {
-        delete image;
-    }
-
-    if (nullptr != camera)
-    {
-        delete camera;
-    }
-}
-
-void Canvas::mousePressEvent(QMouseEvent *e)
-{
+    DELETE(image);
+    DELETE(camera);
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *e)
@@ -75,15 +66,18 @@ void Canvas::draw()
         ptr[i] = 0;
     }
     auto delta = QMatrix4x4();
-    if (x > x_old)
+    if (Move_flag)
     {
+        if (x > x_old)
+        {
         delta.rotate(-8., 0, 1, 0);
-    }
-    else
-    {
+        }
+        else
+        {
         delta.rotate(8., 0, 1, 0);
+        }
+        camera->transform(std::move(delta));
     }
-    camera->transform(std::move(delta));
     QPainter painter(image);
     for (int i = 0; i < model->nfaces(); ++i)
     {

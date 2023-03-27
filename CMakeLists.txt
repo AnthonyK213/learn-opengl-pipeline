@@ -27,6 +27,8 @@ set(PROJECT_SOURCES
         tgaimage.h
         canvas.h
         canvas.cpp
+        camera.h
+        camera.cpp
         ${TS_FILES}
 )
 

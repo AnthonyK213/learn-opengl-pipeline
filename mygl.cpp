@@ -14,7 +14,7 @@ Mygl::Mygl(QWidget *parent)
     ui->setupUi(this);
 
     connect(ui->actionImport, &QAction::triggered, this, &Mygl::importPly);
-    connect(ui->actionDraw, &QAction::triggered, this, &Mygl::drawLine);
+    //connect(ui->actionDraw, &QAction::triggered, this, &Mygl::drawLine);
 }
 
 Mygl::~Mygl()

@@ -6,20 +6,20 @@
 #include <QPainter>
 #include <QDebug>
 #include <QMouseEvent>
-#include "model.h"
+#include "camera.h"
 
 class Canvas : public QWidget
 {
     Q_OBJECT
 public:
     explicit Canvas(QWidget *parent = nullptr);
+    ~Canvas();
 
-    QImage *temp;
-    quint32 *pic;
     int Move_flag;
     int x, y;
     int x_old, y_old;
     QImage *image;
+    Camera *camera;
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -31,7 +31,5 @@ protected:
 signals:
 
 };
-
-static QPointF vec3ToQPointF(vec3 v, QMatrix4x4& tf);
 
 #endif // CANVAS_H

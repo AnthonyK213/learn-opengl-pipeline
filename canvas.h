@@ -15,7 +15,7 @@ public:
     explicit Canvas(QWidget *parent = nullptr);
     ~Canvas();
 
-    int Move_flag;
+    int _move_flag;
     int x, y;
     int x_old, y_old;
     QImage *image;

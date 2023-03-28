@@ -13,7 +13,7 @@
 Canvas::Canvas(QWidget *parent)
 {
     Q_UNUSED(parent);
-    Move_flag = 0;
+    _move_flag = 0;
     image = new QImage(1000, 1000, QImage::Format_ARGB32);
     camera = new Camera(QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 3, 0, 0, 0, 1), 45);
 }
@@ -28,13 +28,13 @@ void Canvas::mouseMoveEvent(QMouseEvent *e)
 {
     x = e->position().x();
     y = e->position().y();
-    if (Move_flag == 1)
+    if (_move_flag == 1)
     {
         this->update();
     }
     else
     {
-        Move_flag = 1;
+        _move_flag = 1;
         x_old = x;
         y_old = y;
     }
@@ -42,7 +42,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *e)
 
 void Canvas::mouseReleaseEvent(QMouseEvent *e)
 {
-    Move_flag = 0;
+    _move_flag = 0;
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -65,17 +65,12 @@ void Canvas::draw()
     {
         ptr[i] = 0;
     }
-    auto delta = QMatrix4x4();
-    if (Move_flag)
+    if (_move_flag)
     {
-        if (x > x_old)
-        {
-        delta.rotate(-8., 0, 1, 0);
-        }
-        else
-        {
-        delta.rotate(8., 0, 1, 0);
-        }
+        auto delta = QMatrix4x4();
+        auto _data = camera->tf().column(0);
+        delta.rotate((float)(x_old - x) * .4, 0, 1, 0);
+        delta.rotate((float)(y_old - y) * .4, _data[0], _data[1], _data[2]);
         camera->transform(std::move(delta));
     }
     QPainter painter(image);
@@ -89,8 +84,8 @@ void Canvas::draw()
             float z_s, z_e;
             QPointF _s = camera->shot(start, z_s);
             QPointF _e = camera->shot(end, z_e);
-            int rgb = qMax(0, qMin(255, qFloor(-(z_s + z_e) * .5 * 255. / 4.)));
-            painter.setPen(QColor(rgb, rgb, rgb));
+            int alpha = 255 - qMax(0, qMin(255, qFloor(-(z_s + z_e) * .5 * 255. / 4.)));
+            painter.setPen(QColor(0, 0, 0, alpha));
             painter.drawLine(_s, _e);
         }
     }

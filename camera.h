@@ -12,12 +12,12 @@ public:
     ~Camera();
     QPointF shot(vec3 &v, float& z);
     void transform(QMatrix4x4&& tf);
+    QMatrix4x4& tf();
 
 private:
     QMatrix4x4 _tf;
     QMatrix4x4 _tf_inv;
     QMatrix4x4 _persp;
-    QMatrix4x4 _compound;
     int _fovy;
 };
 

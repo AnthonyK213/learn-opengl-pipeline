@@ -12,10 +12,11 @@
 
 Canvas::Canvas(QWidget *parent)
 {
-    Q_UNUSED(parent);
+    setParent(parent);
     _move_flag = 0;
     image = new QImage(1000, 1000, QImage::Format_ARGB32);
     camera = new Camera(QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 3, 0, 0, 0, 1), 45);
+    show();
 }
 
 Canvas::~Canvas()
@@ -28,15 +29,18 @@ void Canvas::mouseMoveEvent(QMouseEvent *e)
 {
     x = e->position().x();
     y = e->position().y();
-    if (_move_flag == 1)
+    if (e->buttons() == Qt::MouseButton::RightButton)
     {
-        this->update();
-    }
-    else
-    {
-        _move_flag = 1;
-        x_old = x;
-        y_old = y;
+        if (_move_flag == 1)
+        {
+            this->update();
+        }
+        else
+        {
+            _move_flag = 1;
+            x_old = x;
+            y_old = y;
+        }
     }
 }
 
@@ -54,7 +58,7 @@ void Canvas::paintEvent(QPaintEvent *event)
 
 void Canvas::draw()
 {
-    Model* model = ((Mygl*)parentWidget())->model();
+    Model* model = ((Mygl*)(parentWidget()->parentWidget()))->model();
     if (nullptr == model)
     {
         return;
@@ -92,4 +96,10 @@ void Canvas::draw()
     image->mirror();
     QPainter painter1(this);
     painter1.drawImage(0, 0, *image);
+}
+
+void Canvas::changeFovy(int fovy)
+{
+    this->camera->setFovy(fovy);
+    update();
 }

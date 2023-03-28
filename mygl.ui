@@ -6,20 +6,74 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>1000</height>
+    <width>1440</width>
+    <height>1100</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Mygl</string>
   </property>
-  <widget class="Canvas" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QSlider" name="horizontalSlider">
+    <property name="geometry">
+     <rect>
+      <x>1140</x>
+      <y>30</y>
+      <width>281</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>10</number>
+    </property>
+    <property name="maximum">
+     <number>90</number>
+    </property>
+    <property name="value">
+     <number>45</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>1070</x>
+      <y>30</y>
+      <width>53</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>fovy</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="Canvas" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>30</y>
+      <width>1000</width>
+      <height>1000</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
+     <width>1440</width>
      <height>21</height>
     </rect>
    </property>

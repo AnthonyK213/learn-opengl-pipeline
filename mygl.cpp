@@ -5,6 +5,7 @@
 #include "mygl.h"
 #include "./ui_mygl.h"
 #include "model.h"
+#include "canvas.h"
 
 Mygl::Mygl(QWidget *parent)
     : QMainWindow(parent)
@@ -14,7 +15,7 @@ Mygl::Mygl(QWidget *parent)
     ui->setupUi(this);
 
     connect(ui->actionImport, &QAction::triggered, this, &Mygl::importPly);
-    //connect(ui->actionDraw, &QAction::triggered, this, &Mygl::drawLine);
+    connect(ui->horizontalSlider, &QSlider::sliderMoved, ui->widget, &Canvas::changeFovy);
 }
 
 Mygl::~Mygl()
@@ -34,19 +35,6 @@ void Mygl::importPly()
     this->_model = new Model(fileName.toStdString());
     if (nullptr != bak)
         delete bak;
-}
-
-void Mygl::redraw()
-{
-
-}
-
-void Mygl::drawLine()
-{
-    QPainter painter(pixmap);
-    painter.setPen(Qt::black);
-    painter.drawPoint(10, 10);
-    repaint();
 }
 
 Model* Mygl::model() {

@@ -21,6 +21,9 @@ public:
     QImage *image;
     Camera *camera;
 
+public slots:
+    void changeFovy(int fovy);
+
 protected:
     void paintEvent(QPaintEvent *event);
     void mouseMoveEvent(QMouseEvent *e);

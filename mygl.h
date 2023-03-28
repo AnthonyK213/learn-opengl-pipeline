@@ -23,10 +23,5 @@ private slots:
 private:
     Ui::Mygl *ui;
     Model *_model;
-    void redraw();
-    void drawLine();
-
-    QPixmap *pixmap;
-    bool pressed;
 };
 #endif // MYGL_H

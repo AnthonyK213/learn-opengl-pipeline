@@ -13,6 +13,7 @@ public:
     QPointF shot(vec3 &v, float& z);
     void transform(QMatrix4x4&& tf);
     QMatrix4x4& tf();
+    void setFovy(int fovy);
 
 private:
     QMatrix4x4 _tf;

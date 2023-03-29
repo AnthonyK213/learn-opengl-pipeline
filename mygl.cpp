@@ -13,9 +13,12 @@ Mygl::Mygl(QWidget *parent)
     , _model(nullptr)
 {
     ui->setupUi(this);
+    ui->cb_view->addItems(QStringList { "Perspective", "Parallel" });
+    ui->cb_shade->addItems(QStringList { "Flat", "Smooth" });
 
     connect(ui->actionImport, &QAction::triggered, this, &Mygl::importPly);
-    connect(ui->horizontalSlider, &QSlider::sliderMoved, ui->widget, &Canvas::changeFovy);
+    connect(ui->cb_view, &QComboBox::currentIndexChanged, ui->canvas, &Canvas::setView);
+    connect(ui->cb_shade, &QComboBox::currentIndexChanged, ui->canvas, &Canvas::setShade);
 }
 
 Mygl::~Mygl()

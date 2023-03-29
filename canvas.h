@@ -23,15 +23,20 @@ public:
 
 public slots:
     void changeFovy(int fovy);
+    void setView(int index);
+    void setShade(int index);
 
 protected:
     void paintEvent(QPaintEvent *event);
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
+    void wheelEvent(QWheelEvent *e);
     void draw();
+    void addFovy(int delta);
 
 private:
     float *z_buffer;
+    int _shade = 0;
 
 signals:
 

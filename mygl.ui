@@ -14,33 +14,11 @@
    <string>Mygl</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QSlider" name="horizontalSlider">
+   <widget class="QLabel" name="lb_view">
     <property name="geometry">
      <rect>
-      <x>1140</x>
-      <y>30</y>
-      <width>281</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>10</number>
-    </property>
-    <property name="maximum">
-     <number>90</number>
-    </property>
-    <property name="value">
-     <number>45</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>1070</x>
-      <y>30</y>
+      <x>1080</x>
+      <y>40</y>
       <width>53</width>
       <height>31</height>
      </rect>
@@ -51,19 +29,69 @@
      </font>
     </property>
     <property name="text">
-     <string>fovy</string>
+     <string>View</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="Canvas" name="widget" native="true">
+   <widget class="Canvas" name="canvas" native="true">
     <property name="geometry">
      <rect>
       <x>40</x>
       <y>30</y>
       <width>1000</width>
       <height>1000</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_shade">
+    <property name="geometry">
+     <rect>
+      <x>1080</x>
+      <y>100</y>
+      <width>53</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Shade</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cb_view">
+    <property name="geometry">
+     <rect>
+      <x>1160</x>
+      <y>40</y>
+      <width>171</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="editable">
+     <bool>false</bool>
+    </property>
+    <property name="currentText">
+     <string/>
+    </property>
+    <property name="currentIndex">
+     <number>-1</number>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cb_shade">
+    <property name="geometry">
+     <rect>
+      <x>1160</x>
+      <y>100</y>
+      <width>171</width>
+      <height>31</height>
      </rect>
     </property>
    </widget>

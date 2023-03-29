@@ -27,6 +27,12 @@ Canvas::~Canvas()
     DELETE(z_buffer);
 }
 
+void Canvas::wheelEvent(QWheelEvent *e)
+{
+    QPoint delta = e->angleDelta();
+    addFovy(-delta.y() * .03);
+}
+
 void Canvas::mouseMoveEvent(QMouseEvent *e)
 {
     x = e->position().x();
@@ -60,16 +66,15 @@ void Canvas::paintEvent(QPaintEvent *event)
 
 void Canvas::draw()
 {
+    image->fill(Qt::black);
+    //quint32 *ptr = (quint32*)image->bits();
+    //for (int i = 0; i < 1000000; ++i) ptr[i] = 0;
     Model* model = ((Mygl*)(parentWidget()->parentWidget()))->model();
     if (nullptr == model)
     {
+        QPainter painter1(this);
+        painter1.drawImage(0, 0, *image);
         return;
-    }
-    quint32 *ptr;
-    ptr = (quint32*)image->bits();
-    for (int i = 0; i < 1000000; ++i)
-    {
-        ptr[i] = 0;
     }
     if (_move_flag)
     {
@@ -107,11 +112,17 @@ void Canvas::draw()
         QPointF p2 = camera->shot(model->vert(i, 2), z2);
         QPointF pts[] = { p0, p1, p2 };
         double zs[] = { z0, z1, z2 };
-        // Set brush by normal.
-        vec3 norm = model->normal(i, 0) + model->normal(i, 1) + model->normal(i, 2);
-        norm = norm.normalized();
-        int rgb = 255 * ((norm.z + 1.) * .5);
-        painter.setPen(QColor(rgb, rgb, rgb));
+        vec3 norm;
+        vec3 n0 = model->normal(i, 0);
+        vec3 n1 = model->normal(i, 1);
+        vec3 n2 = model->normal(i, 2);
+        if (this->_shade == 0)
+        {
+            norm = n0 + n1 + n2;
+            norm = norm.normalized();
+            int rgb = 255 * ((norm.z + 1.) * .5);
+            painter.setPen(QColor(rgb, rgb, rgb));
+        }
         // Bounding box.
         float box_xmin(std::numeric_limits<float>::max());
         float box_ymin(std::numeric_limits<float>::max());
@@ -137,13 +148,13 @@ void Canvas::draw()
         float n10 = invdet * -m10;
         float n11 = invdet * m00;
         // Raster
-        int bxmin = qFloor(box_xmin);
-        int bymin = qFloor(box_ymin);
-        int bxmax = qCeil(box_xmax);
-        int bymax = qCeil(box_ymax);
-        for (int yPos = bymin; yPos <= bymax; yPos++)
+        int bxmin = qMax(qFloor(box_xmin), 0);
+        int bymin = qMax(qFloor(box_ymin), 0);
+        int bxmax = qMin(qCeil(box_xmax), 1000);
+        int bymax = qMin(qCeil(box_ymax), 1000);
+        for (int yPos = bymin; yPos < bymax; yPos++)
         {
-            for (int xPos = bxmin; xPos <= bxmax; xPos++)
+            for (int xPos = bxmin; xPos < bxmax; xPos++)
             {
                 float u = n00 * (xPos - p2.x()) + n01 * (yPos - p2.y());
                 float v = n10 * (xPos - p2.x()) + n11 * (yPos - p2.y());
@@ -155,12 +166,18 @@ void Canvas::draw()
                 {
                     pz += l[k] * zs[k];
                 }
-                int px = (int)qMax(qMin(xPos, 999), 0);
-                int py = (int)qMax(qMin(yPos, 999), 0);
-                int index = px + py * 1000;
+                // Smooth shading.
+                int index = xPos + yPos * 1000;
                 if (z_buffer[index] < pz) {
                     z_buffer[index] = pz;
-                    painter.drawPoint(px, py);
+                    if (this->_shade == 1)
+                    {
+                        norm = n0 * u + n1 * v + n2 * w;
+                        norm = norm.normalized();
+                        int rgb = 255 * ((norm.z + 1.) * .5);
+                        painter.setPen(QColor(rgb, rgb, rgb));
+                    }
+                    painter.drawPoint(xPos, yPos);
                 }
             }
         }
@@ -173,5 +190,23 @@ void Canvas::draw()
 void Canvas::changeFovy(int fovy)
 {
     this->camera->setFovy(fovy);
+    update();
+}
+
+void Canvas::addFovy(int delta)
+{
+    this->camera->addFovy(delta);
+    update();
+}
+
+void Canvas::setView(int index)
+{
+    this->camera->setView(index);
+    update();
+}
+
+void Canvas::setShade(int index)
+{
+    this->_shade = index;
     update();
 }

@@ -18,6 +18,14 @@ QPointF Camera::shot(vec3 &v, float& z)
     return QPointF((r.x() + 1.) * 500, (r.y() + 1.) * 500);
 }
 
+QPointF Camera::shot(vec3 &&v, float& z)
+{
+    QVector3D r = this->_tf_inv.map(QVector3D(v.x, v.y, v.z));
+    z = r.z();
+    r = this->_persp.map(r);
+    return QPointF((r.x() + 1.) * 500, (r.y() + 1.) * 500);
+}
+
 void Camera::transform(QMatrix4x4&& tf)
 {
     this->_tf = tf * this->_tf;

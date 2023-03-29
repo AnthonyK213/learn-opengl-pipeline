@@ -30,6 +30,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e);
     void draw();
 
+private:
+    float *z_buffer;
+
 signals:
 
 };

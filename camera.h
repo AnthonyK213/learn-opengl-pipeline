@@ -11,6 +11,7 @@ public:
     Camera(QMatrix4x4&& tf, int&& fovy);
     ~Camera();
     QPointF shot(vec3 &v, float& z);
+    QPointF shot(vec3 &&v, float& z);
     void transform(QMatrix4x4&& tf);
     QMatrix4x4& tf();
     void setFovy(int fovy);

@@ -1,8 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#define ACCURATE_PERSPECTIVE 0
-
 #include <QMatrix4x4>
 #include "geometry.h"
 

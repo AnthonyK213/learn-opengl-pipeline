@@ -145,9 +145,16 @@ void Canvas::draw()
                 float u = n00 * (xPos - p2.x()) + n01 * (yPos - p2.y());
                 float v = n10 * (xPos - p2.x()) + n11 * (yPos - p2.y());
                 float w = 1. - u - v;
-                float l[] { u, v, w };
                 if (u < 0 || v < 0 || w < 0) continue;
                 float pz = 0;
+                float _u = u / z0;
+                float _v = v / z1;
+                float _w = w / z2;
+                float _m = _u + _v + _w;
+                _u /= _m;
+                _v /= _m;
+                _w /= _m;
+                float l[] { _u, _v, _w };
                 for (int k = 0; k < 3; ++k)
                 {
                     pz += l[k] * zs[k];
@@ -158,7 +165,7 @@ void Canvas::draw()
                     z_buffer[index] = pz;
                     if (this->_shade == 1)
                     {
-                        norm = n0 * u + n1 * v + n2 * w;
+                        norm = n0 * _u + n1 * _v + n2 * _w;
                         norm = norm.normalized();
                         int rgb = 255 * ((norm.z + 1.) * .5);
                         painter.setPen(QColor(rgb, rgb, rgb));
@@ -183,11 +190,7 @@ void Canvas::draw()
         //    painter.drawLine(_s, _e);
         //}
     }
-#if ACCURATE_PERSPECTIVE
-    image->mirror(true, false);
-#else
     image->mirror();
-#endif
     QPainter painter1(this);
     painter1.drawImage(0, 0, *image);
 }

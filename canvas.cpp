@@ -91,20 +91,6 @@ void Canvas::draw()
     }
     for (int i = 0; i < model->nfaces(); ++i)
     {
-        //// Drawing wire frame.
-        //for (int j = 0; j < 3; ++j)
-        //{
-        //    int k = (j + 1) % 3;
-        //    vec3 start = model->vert(i, j);
-        //    vec3 end = model->vert(i, k);
-        //    float z_s, z_e;
-        //    QPointF _s = camera->shot(start, z_s);
-        //    QPointF _e = camera->shot(end, z_e);
-        //    int alpha = 255 - qMax(0, qMin(255, qFloor(-(z_s + z_e) * .5 * 255. / 4.)));
-        //    painter.setPen(QColor(0, 0, 0, alpha));
-        //    painter.drawLine(_s, _e);
-        //}
-
         // Shading.
         float z0, z1, z2;
         QPointF p0 = camera->shot(model->vert(i, 0), z0);
@@ -181,8 +167,27 @@ void Canvas::draw()
                 }
             }
         }
+
+        //// Drawing wire frame.
+        //for (int j = 0; j < 3; ++j)
+        //{
+        //    int k = (j + 1) % 3;
+        //    vec3 start = model->vert(i, j);
+        //    vec3 end = model->vert(i, k);
+        //    float z_s, z_e;
+        //    QPointF _s = camera->shot(start, z_s);
+        //    QPointF _e = camera->shot(end, z_e);
+        //    //int alpha = 255 - qMax(0, qMin(255, qFloor(-(z_s + z_e) * .5 * 255. / 4.)));
+        //    //painter.setPen(QColor(0, 0, 0, alpha));
+        //    painter.setPen(QColor(0, 0, 0));
+        //    painter.drawLine(_s, _e);
+        //}
     }
+#if ACCURATE_PERSPECTIVE
+    image->mirror(true, false);
+#else
     image->mirror();
+#endif
     QPainter painter1(this);
     painter1.drawImage(0, 0, *image);
 }

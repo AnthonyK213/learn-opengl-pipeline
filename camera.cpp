@@ -12,9 +12,9 @@ Camera::~Camera() {}
 
 QPointF Camera::shot(vec3 &v, float& z)
 {
-    QVector3D t = this->_tf_inv.map(QVector3D(v.x, v.y, v.z));
-    QVector3D r = this->_persp.map(t);
-    z = t.z();
+    QVector3D r = this->_tf_inv.map(QVector3D(v.x, v.y, v.z));
+    z = r.z();
+    if (this->_view == 0) r = this->_persp.map(r);
     return QPointF((r.x() + 1.) * 500, (r.y() + 1.) * 500);
 }
 
@@ -22,7 +22,13 @@ QPointF Camera::shot(vec3 &&v, float& z)
 {
     QVector3D r = this->_tf_inv.map(QVector3D(v.x, v.y, v.z));
     z = r.z();
-    if (this->_view == 0) r = this->_persp.map(r);
+    if (this->_view == 0)
+    {
+        r = this->_persp.map(r);
+#if ACCURATE_PERSPECTIVE
+        return QPointF((r.x() / z + 1.) * 500, (r.y() / z + 1.) * 500);
+#endif
+    }
     return QPointF((r.x() + 1.) * 500, (r.y() + 1.) * 500);
 }
 

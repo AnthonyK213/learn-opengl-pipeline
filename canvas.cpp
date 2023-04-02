@@ -110,6 +110,15 @@ void Canvas::draw()
             int rgb = (1 - norm * light) * .5 * 200;
             painter.setPen(QColor(rgb, rgb, rgb));
         }
+        // Diffuse
+        const TGAImage& diffuse = model->diffuse();
+        vec2 uv0, uv1, uv2;
+        if (diffuse.width() > 0)
+        {
+            uv0 = model->uv(i, 0);
+            uv1 = model->uv(i, 1);
+            uv2 = model->uv(i, 2);
+        }
         // Bounding box.
         float box_xmin(std::numeric_limits<float>::max());
         float box_ymin(std::numeric_limits<float>::max());
@@ -159,13 +168,27 @@ void Canvas::draw()
                     if (this->_shade == 1)
                     {
                         norm = n0 * _u + n1 * _v + n2 * _w;
-                        if (_m < 0)
-                        {
-                            norm = norm * (-1.);
-                        }
+                        if (_m < 0) norm = norm * (-1.);
                         norm = norm.normalized();
-                        int rgb = (1 - norm * light) * .5 * 200;
-                        painter.setPen(QColor(rgb, rgb, rgb));
+                        vec3 r = -2 * norm * (norm * light) + light;
+                        float ratio = (1. - norm * light) * .5;
+                        auto cam_z = camera->tf().column(2);
+                        if ((vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5 > 0.996)
+                        {
+                            //painter.setPen(QColor(255, 255, 255));
+                            ratio = 1.1;
+                        }
+                        if (diffuse.width() > 0)
+                        {
+                            vec2 uv = (uv0 * _u + uv1 * _v + uv2 * _w) / _m;
+                            TGAColor pixel = diffuse.get(uv.x * diffuse.width(), uv.y * diffuse.height());
+                            painter.setPen(QColor(pixel.bgra[2] * ratio, pixel.bgra[1] * ratio, pixel.bgra[0] * ratio));
+                        }
+                        else
+                        {
+                            int rgb = 200 * ratio;
+                            painter.setPen(QColor(rgb, rgb, rgb));
+                        }
                     }
                     painter.drawPoint(xPos, yPos);
                 }

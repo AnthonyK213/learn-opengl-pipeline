@@ -85,6 +85,8 @@ void Canvas::draw()
         camera->transform(std::move(delta));
     }
     QPainter painter(image);
+    vec3 light = { -1, -1, -1 };
+    light = light.normalized();
     for (int i = 0; i < 1000 * 1000; ++i)
     {
         z_buffer[i] = -std::numeric_limits<float>::max();
@@ -97,7 +99,6 @@ void Canvas::draw()
         QPointF p1 = camera->shot(model->vert(i, 1), z1);
         QPointF p2 = camera->shot(model->vert(i, 2), z2);
         QPointF pts[] = { p0, p1, p2 };
-        double zs[] = { z0, z1, z2 };
         vec3 norm;
         vec3 n0 = model->normal(i, 0);
         vec3 n1 = model->normal(i, 1);
@@ -106,7 +107,7 @@ void Canvas::draw()
         {
             norm = n0 + n1 + n2;
             norm = norm.normalized();
-            int rgb = 255 * ((norm.z + 1.) * .5);
+            int rgb = (1 - norm * light) * .5 * 200;
             painter.setPen(QColor(rgb, rgb, rgb));
         }
         // Bounding box.
@@ -146,19 +147,11 @@ void Canvas::draw()
                 float v = n10 * (xPos - p2.x()) + n11 * (yPos - p2.y());
                 float w = 1. - u - v;
                 if (u < 0 || v < 0 || w < 0) continue;
-                float pz = 0;
                 float _u = u / z0;
                 float _v = v / z1;
                 float _w = w / z2;
                 float _m = _u + _v + _w;
-                _u /= _m;
-                _v /= _m;
-                _w /= _m;
-                float l[] { _u, _v, _w };
-                for (int k = 0; k < 3; ++k)
-                {
-                    pz += l[k] * zs[k];
-                }
+                float pz = (_u * z0 + _v * z1 + _w * z2) / _m;
                 // Smooth shading.
                 int index = xPos + yPos * 1000;
                 if (z_buffer[index] < pz) {
@@ -166,8 +159,12 @@ void Canvas::draw()
                     if (this->_shade == 1)
                     {
                         norm = n0 * _u + n1 * _v + n2 * _w;
+                        if (_m < 0)
+                        {
+                            norm = norm * (-1.);
+                        }
                         norm = norm.normalized();
-                        int rgb = 255 * ((norm.z + 1.) * .5);
+                        int rgb = (1 - norm * light) * .5 * 200;
                         painter.setPen(QColor(rgb, rgb, rgb));
                     }
                     painter.drawPoint(xPos, yPos);

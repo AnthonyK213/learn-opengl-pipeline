@@ -111,14 +111,7 @@
     </property>
     <addaction name="actionImport"/>
    </widget>
-   <widget class="QMenu" name="menuTest">
-    <property name="title">
-     <string>Test</string>
-    </property>
-    <addaction name="actionDraw"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuTest"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionImport">

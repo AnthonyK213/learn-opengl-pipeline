@@ -114,16 +114,27 @@ void Canvas::draw()
         const TGAImage& diffuse = model->diffuse();
         // Specular
         const TGAImage& specular = model->specular();
-        // UV
+        // UV, tangent
         vec2 uv0, uv1, uv2;
+        vec3 T_;
         if (diffuse.width() > 0)
         {
             uv0 = model->uv(i, 0);
             uv1 = model->uv(i, 1);
             uv2 = model->uv(i, 2);
+            vec2 e1 = uv1 - uv0;
+            vec2 e2 = uv2 - uv0;
+            float _det = e1.x * e2.y - e1.y * e2.x;
+            float t00 = e2.y / _det;
+            float t01 = -e1.y / _det;
+            //float t10 = -e2.x / _det;
+            //float t11 = e1.x / _det;
+            vec3 E1 = m1 - m0;
+            vec3 E2 = m2 - m0;
+            T_.x = t00 * E1.x + t01 * E2.x;
+            T_.y = t00 * E1.y + t01 * E2.y;
+            T_.z = t00 * E1.z + t01 * E2.z;
         }
-        // Tangent
-        mat<3, 3> t1;
         // Bounding box.
         float box_xmin(std::numeric_limits<float>::max());
         float box_ymin(std::numeric_limits<float>::max());
@@ -177,12 +188,20 @@ void Canvas::draw()
                         if (_m < 0) n = n * (-1.);
                         if (diffuse.width() > 0)
                         {
-                            //vec3 n = model->normal(uv).normalized();
-                            vec3 r = -2. * n * (n * light) + light;
-                            float diff = (1. - n * light) * .5;
                             vec2 uv = (uv0 * _u + uv1 * _v + uv2 * _w) / _m;
-                            //float spec = pow(qMax(r.z, 0.0f), specular.get(uv.x * specular.width(), uv.y * specular.height()).bgra[0]);
-                            float spec = (vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5;
+                            vec3 n0 = model->normal(uv).normalized();
+                            vec3 t_ = (T_ - (T_ * n) * n).normalized();
+                            vec3 b_ = cross(n, t_);
+                            vec3 n_ = {
+                                t_.x * n0.x + b_.x * n0.y + n.x * n0.z,
+                                t_.y * n0.x + b_.y * n0.y + n.y * n0.z,
+                                t_.z * n0.x + b_.z * n0.y + n.z * n0.z,
+                            };
+                            n_ = n_.normalized();
+                            vec3 r = -2. * n_ * (n_ * light) + light;
+                            float diff = (1. - n_ * light) * .5;
+                            float spec = pow(qMax(r.z, 0.0f), specular.get(uv.x * specular.width(), uv.y * specular.height()).bgra[0]);
+                            //float spec = (vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5;
                             float indensity = diff + .6 * spec;
                             TGAColor pixel = diffuse.get(uv.x * diffuse.width(), uv.y * diffuse.height());
                             painter.setPen(QColor(qMin(255., pixel.bgra[2] * indensity),

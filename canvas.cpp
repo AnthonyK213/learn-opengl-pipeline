@@ -85,8 +85,7 @@ void Canvas::draw()
         camera->transform(std::move(delta));
     }
     QPainter painter(image);
-    vec3 light = { -1, -1, -1 };
-    light = light.normalized();
+    vec3 light = (vec3 { -1, -1, -1 }).normalized();
     for (int i = 0; i < 1000 * 1000; ++i)
     {
         z_buffer[i] = -std::numeric_limits<float>::max();
@@ -95,23 +94,27 @@ void Canvas::draw()
     {
         // Shading.
         float z0, z1, z2;
-        QPointF p0 = camera->shot(model->vert(i, 0), z0);
-        QPointF p1 = camera->shot(model->vert(i, 1), z1);
-        QPointF p2 = camera->shot(model->vert(i, 2), z2);
+        vec3 m0 = model->vert(i, 0);
+        vec3 m1 = model->vert(i, 1);
+        vec3 m2 = model->vert(i, 2);
+        QPointF p0 = camera->shot(m0, z0);
+        QPointF p1 = camera->shot(m1, z1);
+        QPointF p2 = camera->shot(m2, z2);
         QPointF pts[] = { p0, p1, p2 };
-        vec3 norm;
         vec3 n0 = model->normal(i, 0);
         vec3 n1 = model->normal(i, 1);
         vec3 n2 = model->normal(i, 2);
         if (this->_shade == 0)
         {
-            norm = n0 + n1 + n2;
-            norm = norm.normalized();
+            vec3 norm = (n0 + n1 + n2).normalized();
             int rgb = (1 - norm * light) * .5 * 200;
             painter.setPen(QColor(rgb, rgb, rgb));
         }
         // Diffuse
         const TGAImage& diffuse = model->diffuse();
+        // Specular
+        const TGAImage& specular = model->specular();
+        // UV
         vec2 uv0, uv1, uv2;
         if (diffuse.width() > 0)
         {
@@ -119,6 +122,8 @@ void Canvas::draw()
             uv1 = model->uv(i, 1);
             uv2 = model->uv(i, 2);
         }
+        // Tangent
+        mat<3, 3> t1;
         // Bounding box.
         float box_xmin(std::numeric_limits<float>::max());
         float box_ymin(std::numeric_limits<float>::max());
@@ -167,26 +172,32 @@ void Canvas::draw()
                     z_buffer[index] = pz;
                     if (this->_shade == 1)
                     {
-                        norm = n0 * _u + n1 * _v + n2 * _w;
-                        if (_m < 0) norm = norm * (-1.);
-                        norm = norm.normalized();
-                        vec3 r = -2 * norm * (norm * light) + light;
-                        float ratio = (1. - norm * light) * .5;
                         auto cam_z = camera->tf().column(2);
-                        if ((vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5 > 0.996)
-                        {
-                            //painter.setPen(QColor(255, 255, 255));
-                            ratio = 1.1;
-                        }
+                        vec3 n = (n0 * _u + n1 * _v + n2 * _w).normalized();
+                        if (_m < 0) n = n * (-1.);
                         if (diffuse.width() > 0)
                         {
+                            //vec3 n = model->normal(uv).normalized();
+                            vec3 r = -2. * n * (n * light) + light;
+                            float diff = (1. - n * light) * .5;
                             vec2 uv = (uv0 * _u + uv1 * _v + uv2 * _w) / _m;
+                            //float spec = pow(qMax(r.z, 0.0f), specular.get(uv.x * specular.width(), uv.y * specular.height()).bgra[0]);
+                            float spec = (vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5;
+                            float indensity = diff + .6 * spec;
                             TGAColor pixel = diffuse.get(uv.x * diffuse.width(), uv.y * diffuse.height());
-                            painter.setPen(QColor(pixel.bgra[2] * ratio, pixel.bgra[1] * ratio, pixel.bgra[0] * ratio));
+                            painter.setPen(QColor(qMin(255., pixel.bgra[2] * indensity),
+                                                  qMin(255., pixel.bgra[1] * indensity),
+                                                  qMin(255., pixel.bgra[0] * indensity)));
                         }
                         else
                         {
-                            int rgb = 200 * ratio;
+                            vec3 r = -2. * n * (n * light) + light;
+                            float diff = (1. - n * light) * .5;
+                            if ((vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5 > 0.996)
+                            {
+                                diff = 1.1f;
+                            }
+                            int rgb = 200 * diff;
                             painter.setPen(QColor(rgb, rgb, rgb));
                         }
                     }

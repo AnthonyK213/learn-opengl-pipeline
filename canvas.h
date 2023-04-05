@@ -20,11 +20,13 @@ public:
     int x_old, y_old;
     QImage *image;
     Camera *camera;
+    Camera *light;
 
 public slots:
     void changeFovy(int fovy);
     void setView(int index);
     void setShade(int index);
+    void setShadow();
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -36,6 +38,7 @@ protected:
 
 private:
     float *z_buffer;
+    float *shadow_buffer;
     int _shade = 0;
 
 signals:

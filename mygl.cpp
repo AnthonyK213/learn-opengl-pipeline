@@ -36,6 +36,7 @@ void Mygl::importPly()
     }
     Model* bak = this->_model;
     this->_model = new Model(fileName.toStdString());
+    ui->canvas->setShadow();
     if (nullptr != bak)
         delete bak;
 }

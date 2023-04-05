@@ -12,6 +12,8 @@ public:
     ~Camera();
     QPointF shot(vec3 &v, float& z);
     QPointF shot(vec3 &&v, float& z);
+    QPointF shot(vec3 &v, float& z, float& x, float& y);
+    QPointF shot(vec3 &&v, float& z, float& x, float& t);
     void transform(QMatrix4x4&& tf);
     QMatrix4x4& tf();
     void setFovy(int fovy);
@@ -20,8 +22,8 @@ public:
 
 private:
     QMatrix4x4 _tf;
-    QMatrix4x4 _tf_inv;
-    QMatrix4x4 _persp;
+    QMatrix4x4 _view_mat;
+    QMatrix4x4 _persp_mat;
     int _fovy;
     int _view = 0;
 };

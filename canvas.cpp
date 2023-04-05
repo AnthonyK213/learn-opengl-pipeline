@@ -16,7 +16,13 @@ Canvas::Canvas(QWidget *parent)
     _move_flag = 0;
     image = new QImage(1000, 1000, QImage::Format_ARGB32);
     camera = new Camera(QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 3, 0, 0, 0, 1), 45);
+    float r2 = qSqrt(2.);
+    float r3 = qSqrt(3.);
+    float r6 = qSqrt(6.);
+    light = new Camera(QMatrix4x4(1./r2, -1./r6, 1./r3, r3, 0, 2./r6, 1./r3, r3, -1./r2, -1./r6, 1./r3, r3, 0, 0, 0, 1), 45);
+    light->setView(1);
     z_buffer = new float[1000 * 1000];
+    shadow_buffer = new float[1000 * 1000];
     show();
 }
 
@@ -24,7 +30,9 @@ Canvas::~Canvas()
 {
     DELETE(image);
     DELETE(camera);
+    DELETE(light);
     DELETE(z_buffer);
+    DELETE(shadow_buffer);
 }
 
 void Canvas::wheelEvent(QWheelEvent *e)
@@ -64,6 +72,72 @@ void Canvas::paintEvent(QPaintEvent *event)
     y_old = y;
 }
 
+void Canvas::setShadow()
+{
+    Model* model = ((Mygl*)(parentWidget()->parentWidget()))->model();
+    if (nullptr == model) return;
+    for (int i = 0; i < 1000 * 1000; ++i)
+    {
+        shadow_buffer[i] = -std::numeric_limits<float>::max();
+    }
+    for (int i = 0; i < model->nfaces(); ++i)
+    {
+        // Shading.
+        float z0, z1, z2;
+        vec3 m0 = model->vert(i, 0);
+        vec3 m1 = model->vert(i, 1);
+        vec3 m2 = model->vert(i, 2);
+        QPointF p0 = light->shot(m0, z0);
+        QPointF p1 = light->shot(m1, z1);
+        QPointF p2 = light->shot(m2, z2);
+        QPointF pts[] = { p0, p1, p2 };
+        // Bounding box.
+        float box_xmin(std::numeric_limits<float>::max());
+        float box_ymin(std::numeric_limits<float>::max());
+        float box_xmax(-std::numeric_limits<float>::max());
+        float box_ymax(-std::numeric_limits<float>::max());
+        for (int j = 0; j < 3; ++j)
+        {
+            box_xmin = qMin(box_xmin, pts[j].x());
+            box_ymin = qMin(box_ymin, pts[j].y());
+            box_xmax = qMax(box_xmax, pts[j].x());
+            box_ymax = qMax(box_ymax, pts[j].y());
+        }
+        // Barycentric.
+        float m00 = p0.x() - p2.x();
+        float m01 = p1.x() - p2.x();
+        float m10 = p0.y() - p2.y();
+        float m11 = p1.y() - p2.y();
+        float det = (m00 * m11 - m01 * m10);
+        if (qAbs(det) < 1e-5) continue;
+        float invdet = 1. / det;
+        float n00 = invdet * m11;
+        float n01 = invdet * -m01;
+        float n10 = invdet * -m10;
+        float n11 = invdet * m00;
+        // Raster
+        int bxmin = qMax(qFloor(box_xmin), 0);
+        int bymin = qMax(qFloor(box_ymin), 0);
+        int bxmax = qMin(qCeil(box_xmax), 1000);
+        int bymax = qMin(qCeil(box_ymax), 1000);
+        for (int yPos = bymin; yPos < bymax; yPos++)
+        {
+            for (int xPos = bxmin; xPos < bxmax; xPos++)
+            {
+                float u = n00 * (xPos - p2.x()) + n01 * (yPos - p2.y());
+                float v = n10 * (xPos - p2.x()) + n11 * (yPos - p2.y());
+                float w = 1. - u - v;
+                if (u < 0 || v < 0 || w < 0) continue;
+                float pz = u * z0 + v * z1 + w * z2;
+                int index = xPos + yPos * 1000;
+                if (shadow_buffer[index] < pz) {
+                    shadow_buffer[index] = pz;
+                }
+            }
+        }
+    }
+}
+
 void Canvas::draw()
 {
     image->fill(Qt::black);
@@ -85,7 +159,7 @@ void Canvas::draw()
         camera->transform(std::move(delta));
     }
     QPainter painter(image);
-    vec3 light = (vec3 { -1, -1, -1 }).normalized();
+    vec3 _light = (vec3 { -1, -1, -1 }).normalized();
     for (int i = 0; i < 1000 * 1000; ++i)
     {
         z_buffer[i] = -std::numeric_limits<float>::max();
@@ -93,6 +167,8 @@ void Canvas::draw()
     for (int i = 0; i < model->nfaces(); ++i)
     {
         // Shading.
+        //float x0, x1, x2;
+        //float y0, y1, y2;
         float z0, z1, z2;
         vec3 m0 = model->vert(i, 0);
         vec3 m1 = model->vert(i, 1);
@@ -107,7 +183,7 @@ void Canvas::draw()
         if (this->_shade == 0)
         {
             vec3 norm = (n0 + n1 + n2).normalized();
-            int rgb = (1 - norm * light) * .5 * 200;
+            int rgb = (1 - norm * _light) * .5 * 200;
             painter.setPen(QColor(rgb, rgb, rgb));
         }
         // Diffuse
@@ -177,15 +253,23 @@ void Canvas::draw()
                 float _w = w / z2;
                 float _m = _u + _v + _w;
                 float pz = (_u * z0 + _v * z1 + _w * z2) / _m;
-                // Smooth shading.
                 int index = xPos + yPos * 1000;
                 if (z_buffer[index] < pz) {
                     z_buffer[index] = pz;
+                    // Smooth shading.
                     if (this->_shade == 1)
                     {
                         auto cam_z = camera->tf().column(2);
                         vec3 n = (n0 * _u + n1 * _v + n2 * _w).normalized();
                         if (_m < 0) n = n * (-1.);
+                        float light_depth;
+                        auto sx = light->shot((_u * m0 + _v * m1 + _w * m2) / _m, light_depth);
+                        float shadow_indensity = 1.;
+                        float _l_depth = shadow_buffer[qMin(qMax(0, (int)sx.x()), 999) + 1000 * qMin(qMax(0, (int)sx.y()), 999)];
+                        if (qAbs(_l_depth - light_depth) > .01) // z-fighting
+                        {
+                            shadow_indensity = .9;
+                        }
                         if (diffuse.width() > 0)
                         {
                             vec2 uv = (uv0 * _u + uv1 * _v + uv2 * _w) / _m;
@@ -198,11 +282,10 @@ void Canvas::draw()
                                 t_.z * n0.x + b_.z * n0.y + n.z * n0.z,
                             };
                             n_ = n_.normalized();
-                            vec3 r = -2. * n_ * (n_ * light) + light;
-                            float diff = (1. - n_ * light) * .5;
+                            vec3 r = -2. * n_ * (n_ * _light) + _light;
+                            float diff = (1. - n_ * _light) * .5;
                             float spec = pow(qMax(r.z, 0.0f), specular.get(uv.x * specular.width(), uv.y * specular.height()).bgra[0]);
-                            //float spec = (vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5;
-                            float indensity = diff + .6 * spec;
+                            float indensity = (diff + .6 * spec) * shadow_indensity;
                             TGAColor pixel = diffuse.get(uv.x * diffuse.width(), uv.y * diffuse.height());
                             painter.setPen(QColor(qMin(255., pixel.bgra[2] * indensity),
                                                   qMin(255., pixel.bgra[1] * indensity),
@@ -210,13 +293,13 @@ void Canvas::draw()
                         }
                         else
                         {
-                            vec3 r = -2. * n * (n * light) + light;
-                            float diff = (1. - n * light) * .5;
-                            if ((vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5 > 0.996)
+                            vec3 r = -2. * n * (n * _light) + _light;
+                            float diff = (1. - n * _light) * .5;
+                            if ((vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5 > 0.996 && shadow_indensity == 1.)
                             {
                                 diff = 1.1f;
                             }
-                            int rgb = 200 * diff;
+                            int rgb = 200 * diff * shadow_indensity;
                             painter.setPen(QColor(rgb, rgb, rgb));
                         }
                     }

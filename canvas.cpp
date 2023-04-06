@@ -268,7 +268,7 @@ void Canvas::draw()
                         float _l_depth = shadow_buffer[qMin(qMax(0, (int)sx.x()), 999) + 1000 * qMin(qMax(0, (int)sx.y()), 999)];
                         if (qAbs(_l_depth - light_depth) > .01) // z-fighting
                         {
-                            shadow_indensity = .9f;
+                            shadow_indensity = .86f;
                         }
                         if (diffuse.width() > 0)
                         {

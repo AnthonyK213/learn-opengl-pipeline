@@ -14,15 +14,15 @@ Canvas::Canvas(QWidget *parent)
 {
     setParent(parent);
     _move_flag = 0;
-    image = new QImage(1000, 1000, QImage::Format_ARGB32);
+    image = new QImage(690, 690, QImage::Format_ARGB32);
     camera = new Camera(QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 3, 0, 0, 0, 1), 45);
     float r2 = qSqrt(2.);
     float r3 = qSqrt(3.);
     float r6 = qSqrt(6.);
     light = new Camera(QMatrix4x4(1./r2, -1./r6, 1./r3, r3, 0, 2./r6, 1./r3, r3, -1./r2, -1./r6, 1./r3, r3, 0, 0, 0, 1), 45);
     light->setView(1);
-    z_buffer = new float[1000 * 1000];
-    shadow_buffer = new float[1000 * 1000];
+    z_buffer = new float[690 * 690];
+    shadow_buffer = new float[690 * 690];
     show();
 }
 
@@ -76,7 +76,7 @@ void Canvas::setShadow()
 {
     Model* model = ((Mygl*)(parentWidget()->parentWidget()))->model();
     if (nullptr == model) return;
-    for (int i = 0; i < 1000 * 1000; ++i)
+    for (int i = 0; i < 690 * 690; ++i)
     {
         shadow_buffer[i] = -std::numeric_limits<float>::max();
     }
@@ -118,8 +118,8 @@ void Canvas::setShadow()
         // Raster
         int bxmin = qMax(qFloor(box_xmin), 0);
         int bymin = qMax(qFloor(box_ymin), 0);
-        int bxmax = qMin(qCeil(box_xmax), 1000);
-        int bymax = qMin(qCeil(box_ymax), 1000);
+        int bxmax = qMin(qCeil(box_xmax), 690);
+        int bymax = qMin(qCeil(box_ymax), 690);
         for (int yPos = bymin; yPos < bymax; yPos++)
         {
             for (int xPos = bxmin; xPos < bxmax; xPos++)
@@ -129,7 +129,7 @@ void Canvas::setShadow()
                 float w = 1. - u - v;
                 if (u < 0 || v < 0 || w < 0) continue;
                 float pz = u * z0 + v * z1 + w * z2;
-                int index = xPos + yPos * 1000;
+                int index = xPos + yPos * 690;
                 if (shadow_buffer[index] < pz) {
                     shadow_buffer[index] = pz;
                 }
@@ -142,7 +142,7 @@ void Canvas::draw()
 {
     image->fill(Qt::black);
     //quint32 *ptr = (quint32*)image->bits();
-    //for (int i = 0; i < 1000000; ++i) ptr[i] = 0;
+    //for (int i = 0; i < 690 * 690; ++i) ptr[i] = 0;
     Model* model = ((Mygl*)(parentWidget()->parentWidget()))->model();
     if (nullptr == model)
     {
@@ -160,7 +160,7 @@ void Canvas::draw()
     }
     QPainter painter(image);
     vec3 _light = (vec3 { -1, -1, -1 }).normalized();
-    for (int i = 0; i < 1000 * 1000; ++i)
+    for (int i = 0; i < 690 * 690; ++i)
     {
         z_buffer[i] = -std::numeric_limits<float>::max();
     }
@@ -238,8 +238,8 @@ void Canvas::draw()
         // Raster
         int bxmin = qMax(qFloor(box_xmin), 0);
         int bymin = qMax(qFloor(box_ymin), 0);
-        int bxmax = qMin(qCeil(box_xmax), 1000);
-        int bymax = qMin(qCeil(box_ymax), 1000);
+        int bxmax = qMin(qCeil(box_xmax), 690);
+        int bymax = qMin(qCeil(box_ymax), 690);
         for (int yPos = bymin; yPos < bymax; yPos++)
         {
             for (int xPos = bxmin; xPos < bxmax; xPos++)
@@ -253,7 +253,7 @@ void Canvas::draw()
                 float _w = w / z2;
                 float _m = _u + _v + _w;
                 float pz = (_u * z0 + _v * z1 + _w * z2) / _m;
-                int index = xPos + yPos * 1000;
+                int index = xPos + yPos * 690;
                 if (z_buffer[index] < pz) {
                     z_buffer[index] = pz;
                     // Smooth shading.
@@ -265,7 +265,7 @@ void Canvas::draw()
                         float light_depth;
                         auto sx = light->shot((_u * m0 + _v * m1 + _w * m2) / _m, light_depth);
                         float shadow_indensity = 1.;
-                        float _l_depth = shadow_buffer[qMin(qMax(0, (int)sx.x()), 999) + 1000 * qMin(qMax(0, (int)sx.y()), 999)];
+                        float _l_depth = shadow_buffer[qMin(qMax(0, (int)sx.x()), 689) + 690 * qMin(qMax(0, (int)sx.y()), 689)];
                         if (qAbs(_l_depth - light_depth) > .01) // z-fighting
                         {
                             shadow_indensity = .86f;

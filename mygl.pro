@@ -15,13 +15,12 @@ QT += widgets
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += camera.h canvas.h geometry.h model.h mygl.h tgaimage.h
+HEADERS += camera.h canvas.h geometry.h model.h mygl.h
 FORMS += mygl.ui
 SOURCES += camera.cpp \
            canvas.cpp \
            geometry.cpp \
            main.cpp \
            model.cpp \
-           mygl.cpp \
-           tgaimage.cpp
+           mygl.cpp
 TRANSLATIONS += mygl_en_US.ts

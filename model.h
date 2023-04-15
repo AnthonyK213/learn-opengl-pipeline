@@ -2,7 +2,8 @@
 #include <vector>
 #include <string>
 #include "geometry.h"
-#include "tgaimage.h"
+#include <QImage>
+#include <fstream>
 
 class Model {
     std::vector<vec3> verts{};     // array of vertices
@@ -11,10 +12,10 @@ class Model {
     std::vector<int> facet_vrt{};
     std::vector<int> facet_tex{};  // per-triangle indices in the above arrays
     std::vector<int> facet_nrm{};
-    TGAImage diffusemap{};         // diffuse color texture
-    TGAImage normalmap{};          // normal map texture
-    TGAImage specularmap{};        // specular map texture
-    void load_texture(const std::string filename, const std::string suffix, TGAImage &img);
+    QImage m_diffusemap{};
+    QImage m_normalmap{};          // normal map texture
+    QImage m_specularmap{};        // specular map texture
+    void load_texture(std::string filename, const std::string suffix, QImage& img);
 public:
     Model(const std::string filename);
     int nverts() const;
@@ -24,7 +25,7 @@ public:
     vec3 vert(const int i) const;
     vec3 vert(const int iface, const int nthvert) const;
     vec2 uv(const int iface, const int nthvert) const;
-    const TGAImage& diffuse()  const { return diffusemap;  }
-    const TGAImage& specular() const { return specularmap; }
+    const QImage& diffuse()  const { return m_diffusemap;  }
+    const QImage& specular() const { return m_specularmap; }
 };
 

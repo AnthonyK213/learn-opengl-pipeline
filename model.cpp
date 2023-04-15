@@ -43,9 +43,9 @@ Model::Model(const std::string filename) {
         }
     }
     std::cerr << "# v# " << nverts() << " f# "  << nfaces() << " vt# " << tex_coord.size() << " vn# " << norms.size() << std::endl;
-    load_texture(filename, "_diffuse.tga",    diffusemap );
-    load_texture(filename, "_nm_tangent.tga", normalmap  );
-    load_texture(filename, "_spec.tga",       specularmap);
+    load_texture(filename, "_diffuse.png",    m_diffusemap );
+    load_texture(filename, "_nm_tangent.png", m_normalmap  );
+    load_texture(filename, "_spec.png",       m_specularmap);
 }
 
 int Model::nverts() const {
@@ -64,16 +64,16 @@ vec3 Model::vert(const int iface, const int nthvert) const {
     return verts[facet_vrt[iface*3+nthvert]];
 }
 
-void Model::load_texture(std::string filename, const std::string suffix, TGAImage &img) {
+void Model::load_texture(std::string filename, const std::string suffix, QImage &img) {
     size_t dot = filename.find_last_of(".");
     if (dot==std::string::npos) return;
     std::string texfile = filename.substr(0,dot) + suffix;
-    std::cerr << "texture file " << texfile << " loading " << (img.read_tga_file(texfile.c_str()) ? "ok" : "failed") << std::endl;
+    std::cerr << "texture file " << texfile << " loading " << (img.load(texfile.c_str()) ? "ok" : "failed") << std::endl;
 }
 
 vec3 Model::normal(const vec2 &uvf) const {
-    TGAColor c = normalmap.get(uvf[0]*normalmap.width(), uvf[1]*normalmap.height());
-    return vec3{(double)c[2],(double)c[1],(double)c[0]}*2./255. - vec3{1,1,1};
+    QRgb c = m_normalmap.pixel(uvf[0]*m_normalmap.width(), uvf[1]*m_normalmap.height());
+    return vec3{(double)qRed(c),(double)qGreen(c),(double)qBlue(c)}*2. / 255. - vec3{1,1,1};
 }
 
 vec2 Model::uv(const int iface, const int nthvert) const {

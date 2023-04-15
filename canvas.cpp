@@ -187,9 +187,9 @@ void Canvas::draw()
             painter.setPen(QColor(rgb, rgb, rgb));
         }
         // Diffuse
-        const TGAImage& diffuse = model->diffuse();
+        const QImage& diffuse = model->diffuse();
         // Specular
-        const TGAImage& specular = model->specular();
+        const QImage& specular = model->specular();
         // UV, tangent
         vec2 uv0, uv1, uv2;
         vec3 T_;
@@ -284,12 +284,12 @@ void Canvas::draw()
                             n_ = n_.normalized();
                             vec3 r = -2. * n_ * (n_ * _light) + _light;
                             float diff = (1. - n_ * _light) * .5;
-                            float spec = pow(qMax(r.z, 0.0f), specular.get(uv.x * specular.width(), uv.y * specular.height()).bgra[0]);
+                            float spec = pow(qMax(r.z, 0.0f), qRed(specular.pixel(uv.x * specular.width(), uv.y * specular.height())));
                             float indensity = (diff + .6 * spec) * shadow_indensity;
-                            TGAColor pixel = diffuse.get(uv.x * diffuse.width(), uv.y * diffuse.height());
-                            painter.setPen(QColor(qMin(255., pixel.bgra[2] * indensity),
-                                                  qMin(255., pixel.bgra[1] * indensity),
-                                                  qMin(255., pixel.bgra[0] * indensity)));
+                            QRgb pixel = diffuse.pixel(uv.x * diffuse.width(), uv.y * diffuse.height());
+                            painter.setPen(QColor(qMin(255., qRed(pixel) * indensity),
+                                                  qMin(255., qGreen(pixel) * indensity),
+                                                  qMin(255., qBlue(pixel) * indensity)));
                         }
                         else
                         {

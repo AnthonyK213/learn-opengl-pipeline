@@ -21,10 +21,8 @@ set(PROJECT_SOURCES
         mygl.ui
         geometry.cpp
         model.cpp
-        tgaimage.cpp
         geometry.h
         model.h
-        tgaimage.h
         canvas.h
         canvas.cpp
         camera.h

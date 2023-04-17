@@ -13,19 +13,19 @@ Model::Model(const std::string filename) {
         char trash;
         if (!line.compare(0, 2, "v ")) {
             iss >> trash;
-            vec3 v;
+            QVector3D v;
             for (int i=0;i<3;i++) iss >> v[i];
             verts.push_back(v);
         } else if (!line.compare(0, 3, "vn ")) {
             iss >> trash >> trash;
-            vec3 n;
+            QVector3D n;
             for (int i=0;i<3;i++) iss >> n[i];
             norms.push_back(n.normalized());
         } else if (!line.compare(0, 3, "vt ")) {
             iss >> trash >> trash;
-            vec2 uv;
+            QVector2D uv;
             for (int i=0;i<2;i++) iss >> uv[i];
-            tex_coord.push_back({uv.x, 1-uv.y});
+            tex_coord.push_back(QVector2D(uv[0], 1. - uv[1]));
         }  else if (!line.compare(0, 2, "f ")) {
             int f,t,n;
             iss >> trash;
@@ -56,11 +56,11 @@ int Model::nfaces() const {
     return facet_vrt.size()/3;
 }
 
-vec3 Model::vert(const int i) const {
+QVector3D Model::vert(const int i) const {
     return verts[i];
 }
 
-vec3 Model::vert(const int iface, const int nthvert) const {
+QVector3D Model::vert(const int iface, const int nthvert) const {
     return verts[facet_vrt[iface*3+nthvert]];
 }
 
@@ -71,16 +71,16 @@ void Model::load_texture(std::string filename, const std::string suffix, QImage 
     std::cerr << "texture file " << texfile << " loading " << (img.load(texfile.c_str()) ? "ok" : "failed") << std::endl;
 }
 
-vec3 Model::normal(const vec2 &uvf) const {
+QVector3D Model::normal(const QVector2D &uvf) const {
     QRgb c = m_normalmap.pixel(uvf[0]*m_normalmap.width(), uvf[1]*m_normalmap.height());
-    return vec3{(double)qRed(c),(double)qGreen(c),(double)qBlue(c)}*2. / 255. - vec3{1,1,1};
+    return QVector3D{(float)qRed(c),(float)qGreen(c),(float)qBlue(c)}*2. / 255. - QVector3D{1,1,1};
 }
 
-vec2 Model::uv(const int iface, const int nthvert) const {
+QVector2D Model::uv(const int iface, const int nthvert) const {
     return tex_coord[facet_tex[iface*3+nthvert]];
 }
 
-vec3 Model::normal(const int iface, const int nthvert) const {
+QVector3D Model::normal(const int iface, const int nthvert) const {
     return norms[facet_nrm[iface*3+nthvert]];
 }
 

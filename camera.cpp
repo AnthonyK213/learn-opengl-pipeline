@@ -10,17 +10,17 @@ Camera::Camera(QMatrix4x4&& tf, int&& fovy) : _tf(tf)
 
 Camera::~Camera() {}
 
-QPointF Camera::shot(vec3 &v, float& z)
+QPointF Camera::shot(QVector3D &v, float& z)
 {
-    QVector3D r = this->_view_mat.map(QVector3D(v.x, v.y, v.z));
+    QVector3D r = this->_view_mat.map(v);
     z = r.z();
     if (this->_view == 0) r = this->_persp_mat.map(r);
     return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
 }
 
-QPointF Camera::shot(vec3 &&v, float& z)
+QPointF Camera::shot(QVector3D &&v, float& z)
 {
-    QVector3D r = this->_view_mat.map(QVector3D(v.x, v.y, v.z));
+    QVector3D r = this->_view_mat.map(v);
     z = r.z();
     if (this->_view == 0)
     {
@@ -29,9 +29,9 @@ QPointF Camera::shot(vec3 &&v, float& z)
     return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
 }
 
-QPointF Camera::shot(vec3 &v, float& z, float& x, float &y)
+QPointF Camera::shot(QVector3D &v, float& z, float& x, float &y)
 {
-    QVector3D r = this->_view_mat.map(QVector3D(v.x, v.y, v.z));
+    QVector3D r = this->_view_mat.map(v);
     z = r.z();
     x = r.x();
     y = r.y();
@@ -39,9 +39,9 @@ QPointF Camera::shot(vec3 &v, float& z, float& x, float &y)
     return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
 }
 
-QPointF Camera::shot(vec3 &&v, float& z, float& x, float &y)
+QPointF Camera::shot(QVector3D &&v, float& z, float& x, float &y)
 {
-    QVector3D r = this->_view_mat.map(QVector3D(v.x, v.y, v.z));
+    QVector3D r = this->_view_mat.map(v);
     z = r.z();
     x = r.x();
     y = r.y();

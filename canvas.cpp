@@ -84,9 +84,9 @@ void Canvas::setShadow()
     {
         // Shading.
         float z0, z1, z2;
-        vec3 m0 = model->vert(i, 0);
-        vec3 m1 = model->vert(i, 1);
-        vec3 m2 = model->vert(i, 2);
+        QVector3D m0 = model->vert(i, 0);
+        QVector3D m1 = model->vert(i, 1);
+        QVector3D m2 = model->vert(i, 2);
         QPointF p0 = light->shot(m0, z0);
         QPointF p1 = light->shot(m1, z1);
         QPointF p2 = light->shot(m2, z2);
@@ -159,7 +159,7 @@ void Canvas::draw()
         camera->transform(std::move(delta));
     }
     QPainter painter(image);
-    vec3 _light = (vec3 { -1, -1, -1 }).normalized();
+    QVector3D _light = (QVector3D { -1, -1, -1 }).normalized();
     for (int i = 0; i < 690 * 690; ++i)
     {
         z_buffer[i] = -std::numeric_limits<float>::max();
@@ -170,20 +170,20 @@ void Canvas::draw()
         //float x0, x1, x2;
         //float y0, y1, y2;
         float z0, z1, z2;
-        vec3 m0 = model->vert(i, 0);
-        vec3 m1 = model->vert(i, 1);
-        vec3 m2 = model->vert(i, 2);
+        QVector3D m0 = model->vert(i, 0);
+        QVector3D m1 = model->vert(i, 1);
+        QVector3D m2 = model->vert(i, 2);
         QPointF p0 = camera->shot(m0, z0);
         QPointF p1 = camera->shot(m1, z1);
         QPointF p2 = camera->shot(m2, z2);
         QPointF pts[] = { p0, p1, p2 };
-        vec3 n0 = model->normal(i, 0);
-        vec3 n1 = model->normal(i, 1);
-        vec3 n2 = model->normal(i, 2);
+        QVector3D n0 = model->normal(i, 0);
+        QVector3D n1 = model->normal(i, 1);
+        QVector3D n2 = model->normal(i, 2);
         if (this->_shade == 0)
         {
-            vec3 norm = (n0 + n1 + n2).normalized();
-            int rgb = (1 - norm * _light) * .5 * 200;
+            QVector3D norm = (n0 + n1 + n2).normalized();
+            int rgb = (1. - QVector3D::dotProduct(norm, _light)) * .5 * 200;
             painter.setPen(QColor(rgb, rgb, rgb));
         }
         // Diffuse
@@ -191,25 +191,25 @@ void Canvas::draw()
         // Specular
         const QImage& specular = model->specular();
         // UV, tangent
-        vec2 uv0, uv1, uv2;
-        vec3 T_;
+        QVector2D uv0, uv1, uv2;
+        QVector3D T_;
         if (diffuse.width() > 0)
         {
             uv0 = model->uv(i, 0);
             uv1 = model->uv(i, 1);
             uv2 = model->uv(i, 2);
-            vec2 e1 = uv1 - uv0;
-            vec2 e2 = uv2 - uv0;
-            float _det = e1.x * e2.y - e1.y * e2.x;
-            float t00 = e2.y / _det;
-            float t01 = -e1.y / _det;
+            QVector2D e1 = uv1 - uv0;
+            QVector2D e2 = uv2 - uv0;
+            float _det = e1.x() * e2.y() - e1.y() * e2.x();
+            float t00 = e2.y() / _det;
+            float t01 = -e1.y() / _det;
             //float t10 = -e2.x / _det;
             //float t11 = e1.x / _det;
-            vec3 E1 = m1 - m0;
-            vec3 E2 = m2 - m0;
-            T_.x = t00 * E1.x + t01 * E2.x;
-            T_.y = t00 * E1.y + t01 * E2.y;
-            T_.z = t00 * E1.z + t01 * E2.z;
+            QVector3D E1 = m1 - m0;
+            QVector3D E2 = m2 - m0;
+            T_.setX(t00 * E1.x() + t01 * E2.x());
+            T_.setY(t00 * E1.y() + t01 * E2.y());
+            T_.setZ(t00 * E1.z() + t01 * E2.z());
         }
         // Bounding box.
         float box_xmin(std::numeric_limits<float>::max());
@@ -260,7 +260,7 @@ void Canvas::draw()
                     if (this->_shade == 1)
                     {
                         auto cam_z = camera->tf().column(2);
-                        vec3 n = (n0 * _u + n1 * _v + n2 * _w).normalized();
+                        QVector3D n = (n0 * _u + n1 * _v + n2 * _w).normalized();
                         if (_m < 0) n = n * (-1.);
                         float light_depth;
                         auto sx = light->shot((_u * m0 + _v * m1 + _w * m2) / _m, light_depth);
@@ -272,30 +272,30 @@ void Canvas::draw()
                         }
                         if (diffuse.width() > 0)
                         {
-                            vec2 uv = (uv0 * _u + uv1 * _v + uv2 * _w) / _m;
-                            vec3 n0 = model->normal(uv).normalized();
-                            vec3 t_ = (T_ - (T_ * n) * n).normalized();
-                            vec3 b_ = cross(n, t_);
-                            vec3 n_ = {
-                                t_.x * n0.x + b_.x * n0.y + n.x * n0.z,
-                                t_.y * n0.x + b_.y * n0.y + n.y * n0.z,
-                                t_.z * n0.x + b_.z * n0.y + n.z * n0.z,
+                            QVector2D uv = (uv0 * _u + uv1 * _v + uv2 * _w) / _m;
+                            QVector3D n0 = model->normal(uv).normalized();
+                            QVector3D t_ = (T_ - QVector3D::dotProduct(T_, n) * n).normalized();
+                            QVector3D b_ = QVector3D::crossProduct(n, t_);
+                            QVector3D n_ = {
+                                t_.x() * n0.x() + b_.x() * n0.y() + n.x() * n0.z(),
+                                t_.y() * n0.x() + b_.y() * n0.y() + n.y() * n0.z(),
+                                t_.z() * n0.x() + b_.z() * n0.y() + n.z() * n0.z(),
                             };
                             n_ = n_.normalized();
-                            vec3 r = -2. * n_ * (n_ * _light) + _light;
-                            float diff = (1. - n_ * _light) * .5;
-                            float spec = pow(qMax(r.z, 0.0f), qRed(specular.pixel(uv.x * specular.width(), uv.y * specular.height())));
+                            QVector3D r = -2. * n_ * QVector3D::dotProduct(n_, _light) + _light;
+                            float diff = (1. - QVector3D::dotProduct(n_, _light)) * .5;
+                            float spec = pow(qMax(r.z(), 0.0f), qRed(specular.pixel(uv.x() * specular.width(), uv.y() * specular.height())));
                             float indensity = (diff + .6 * spec) * shadow_indensity;
-                            QRgb pixel = diffuse.pixel(uv.x * diffuse.width(), uv.y * diffuse.height());
+                            QRgb pixel = diffuse.pixel(uv.x() * diffuse.width(), uv.y() * diffuse.height());
                             painter.setPen(QColor(qMin(255., qRed(pixel) * indensity),
                                                   qMin(255., qGreen(pixel) * indensity),
                                                   qMin(255., qBlue(pixel) * indensity)));
                         }
                         else
                         {
-                            vec3 r = -2. * n * (n * _light) + _light;
-                            float diff = (1. - n * _light) * .5;
-                            if ((vec3 { cam_z.x(), cam_z.y(), cam_z.z() } * r + 1.) * .5 > 0.996 && shadow_indensity == 1.)
+                            QVector3D r = -2. * n * QVector3D::dotProduct(n, _light) + _light;
+                            float diff = (1. - QVector3D::dotProduct(n, _light)) * .5;
+                            if ((QVector3D::dotProduct(QVector3D { cam_z.x(), cam_z.y(), cam_z.z() }, r) + 1.) * 0.5 > 0.996 && shadow_indensity == 1.)
                             {
                                 diff = 1.1f;
                             }
@@ -312,8 +312,8 @@ void Canvas::draw()
         //for (int j = 0; j < 3; ++j)
         //{
         //    int k = (j + 1) % 3;
-        //    vec3 start = model->vert(i, j);
-        //    vec3 end = model->vert(i, k);
+        //    QVector3D start = model->vert(i, j);
+        //    QVector3D end = model->vert(i, k);
         //    float z_s, z_e;
         //    QPointF _s = camera->shot(start, z_s);
         //    QPointF _e = camera->shot(end, z_e);

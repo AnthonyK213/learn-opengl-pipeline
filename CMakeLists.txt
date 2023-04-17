@@ -19,9 +19,7 @@ set(PROJECT_SOURCES
         mygl.cpp
         mygl.h
         mygl.ui
-        geometry.cpp
         model.cpp
-        geometry.h
         model.h
         canvas.h
         canvas.cpp

@@ -2,8 +2,8 @@
 #include <vector>
 #include <string>
 #include <QImage>
-#include <QVector2d>
-#include <QVector3d>
+#include <QVector2D>
+#include <QVector3D>
 #include <fstream>
 
 class Model {

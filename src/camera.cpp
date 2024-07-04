@@ -2,81 +2,65 @@
 
 Camera::Camera() {}
 
-Camera::Camera(QMatrix4x4&& tf, int&& fovy) : _tf(tf)
-{
-    setFovy(fovy);
-    this->_view_mat = tf.inverted();
+Camera::Camera(QMatrix4x4 &&theTrsf, int theFovy) : myTrsf(theTrsf) {
+  SetFovy(theFovy);
+  myViewMat = theTrsf.inverted();
 }
 
-Camera::~Camera() {}
-
-QPointF Camera::shot(QVector3D &v, float& z)
-{
-    QVector3D r = this->_view_mat.map(v);
-    z = r.z();
-    if (this->_view == 0) r = this->_persp_mat.map(r);
-    return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
+QPointF Camera::Shot(QVector3D &v, float &z) {
+  QVector3D r = myViewMat.map(v);
+  z = r.z();
+  if (myView == 0)
+    r = myPerspMat.map(r);
+  return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
 }
 
-QPointF Camera::shot(QVector3D &&v, float& z)
-{
-    QVector3D r = this->_view_mat.map(v);
-    z = r.z();
-    if (this->_view == 0)
-    {
-        r = this->_persp_mat.map(r);
-    }
-    return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
+QPointF Camera::Shot(QVector3D &&v, float &z) {
+  QVector3D r = myViewMat.map(v);
+  z = r.z();
+  if (myView == 0) {
+    r = myPerspMat.map(r);
+  }
+  return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
 }
 
-QPointF Camera::shot(QVector3D &v, float& z, float& x, float &y)
-{
-    QVector3D r = this->_view_mat.map(v);
-    z = r.z();
-    x = r.x();
-    y = r.y();
-    if (this->_view == 0) r = this->_persp_mat.map(r);
-    return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
+QPointF Camera::Shot(QVector3D &v, float &z, float &x, float &y) {
+  QVector3D r = myViewMat.map(v);
+  z = r.z();
+  x = r.x();
+  y = r.y();
+  if (myView == 0)
+    r = myPerspMat.map(r);
+  return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
 }
 
-QPointF Camera::shot(QVector3D &&v, float& z, float& x, float &y)
-{
-    QVector3D r = this->_view_mat.map(v);
-    z = r.z();
-    x = r.x();
-    y = r.y();
-    if (this->_view == 0)
-    {
-        r = this->_persp_mat.map(r);
-    }
-    return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
+QPointF Camera::Shot(QVector3D &&v, float &z, float &x, float &y) {
+  QVector3D r = myViewMat.map(v);
+  z = r.z();
+  x = r.x();
+  y = r.y();
+  if (myView == 0) {
+    r = myPerspMat.map(r);
+  }
+  return QPointF((r.x() + 1.) * 690 / 2, (r.y() + 1.) * 690 / 2);
 }
 
-void Camera::transform(QMatrix4x4&& tf)
-{
-    this->_tf = tf * this->_tf;
-    this->_view_mat = this->_tf.inverted();
+void Camera::Transform(QMatrix4x4 &&tf) {
+  myTrsf = tf * myTrsf;
+  myViewMat = myTrsf.inverted();
 }
 
-QMatrix4x4& Camera::tf()
-{
-    return this->_tf;
+const QMatrix4x4 &Camera::Transform() const { return myTrsf; }
+
+void Camera::SetFovy(int fovy) {
+  myFovy = fovy;
+  float a = 1. / qTan(0.5 * qDegreesToRadians(myFovy));
+  myPerspMat = QMatrix4x4(a, 0, 0, 0, 0, a, 0, 0, 0, 0, -1, 0, 0, 0, -1, 0);
 }
 
-void Camera::setFovy(int fovy)
-{
-    this->_fovy = fovy;
-    float a = 1. / qTan(0.5 * qDegreesToRadians(_fovy));
-    this->_persp_mat = QMatrix4x4(a, 0, 0, 0, 0, a, 0, 0, 0, 0, -1, 0, 0, 0, -1, 0);
+void Camera::AddFovy(int delta) {
+  int fovy = qMin(qMax(10, myFovy + delta), 169);
+  SetFovy(fovy);
 }
 
-void Camera::addFovy(int delta)
-{
-    int fovy = qMin(qMax(10, this->_fovy + delta), 169);
-    setFovy(fovy);
-}
-
-void Camera::setView(int index)
-{
-    this->_view = index;
-}
+void Camera::SetView(int index) { myView = index; }

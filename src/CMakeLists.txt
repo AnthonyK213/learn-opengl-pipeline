@@ -26,6 +26,11 @@ else()
   qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
+target_include_directories(mygl
+  PUBLIC
+  ${objl_SOURCE_DIR}
+  )
+
 target_link_libraries(mygl PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 set_target_properties(mygl PROPERTIES

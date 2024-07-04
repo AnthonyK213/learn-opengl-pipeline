@@ -3,28 +3,26 @@
 
 #include <QMatrix4x4>
 
-class Camera
-{
+class Camera {
 public:
-    Camera();
-    Camera(QMatrix4x4&& tf, int&& fovy);
-    ~Camera();
-    QPointF shot(QVector3D &v, float& z);
-    QPointF shot(QVector3D &&v, float& z);
-    QPointF shot(QVector3D &v, float& z, float& x, float& y);
-    QPointF shot(QVector3D &&v, float& z, float& x, float& t);
-    void transform(QMatrix4x4&& tf);
-    QMatrix4x4& tf();
-    void setFovy(int fovy);
-    void addFovy(int delta);
-    void setView(int index);
+  Camera();
+  Camera(QMatrix4x4 &&theTrsf, int theFovy);
+  QPointF Shot(QVector3D &v, float &z);
+  QPointF Shot(QVector3D &&v, float &z);
+  QPointF Shot(QVector3D &v, float &z, float &x, float &y);
+  QPointF Shot(QVector3D &&v, float &z, float &x, float &t);
+  void Transform(QMatrix4x4 &&trsf);
+  const QMatrix4x4 &Transform() const;
+  void SetFovy(int fovy);
+  void AddFovy(int delta);
+  void SetView(int index);
 
 private:
-    QMatrix4x4 _tf;
-    QMatrix4x4 _view_mat;
-    QMatrix4x4 _persp_mat;
-    int _fovy;
-    int _view = 0;
+  QMatrix4x4 myTrsf;
+  QMatrix4x4 myViewMat;
+  QMatrix4x4 myPerspMat;
+  int myFovy;
+  int myView = 0;
 };
 
 #endif // CAMERA_H

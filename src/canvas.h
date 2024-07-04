@@ -1,48 +1,45 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include <QObject>
-#include <QWidget>
-#include <QPainter>
 #include <QDebug>
 #include <QMouseEvent>
-#include "camera.h"
+#include <QObject>
+#include <QPainter>
+#include <QWidget>
 
-class Canvas : public QWidget
-{
-    Q_OBJECT
+class Camera;
+
+class Canvas : public QWidget {
+  Q_OBJECT
+
 public:
-    explicit Canvas(QWidget *parent = nullptr);
-    ~Canvas();
-
-    int _move_flag;
-    int x, y;
-    int x_old, y_old;
-    QImage *image;
-    Camera *camera;
-    Camera *light;
+  explicit Canvas(QWidget *parent = nullptr);
+  ~Canvas();
 
 public slots:
-    void changeFovy(int fovy);
-    void setView(int index);
-    void setShade(int index);
-    void setShadow();
+  void ChangeFovy(int fovy);
+  void SetView(int index);
+  void SetShade(int index);
+  void SetShadow();
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void mouseMoveEvent(QMouseEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void wheelEvent(QWheelEvent *e);
-    void draw();
-    void addFovy(int delta);
+  virtual void paintEvent(QPaintEvent *e) override;
+  virtual void mouseMoveEvent(QMouseEvent *e) override;
+  virtual void mouseReleaseEvent(QMouseEvent *e) override;
+  virtual void wheelEvent(QWheelEvent *e) override;
+  void draw();
+  void addFovy(int delta);
 
 private:
-    float *z_buffer;
-    float *shadow_buffer;
-    int _shade = 0;
-
-signals:
-
+  QImage *myImage;
+  Camera *myCamera;
+  Camera *myLight;
+  float *myZBuf;
+  float *myShadowBuf;
+  int myShade = 0;
+  int myMoveFlag;
+  int myX, myY;
+  int myOldX, myOldY;
 };
 
 #endif // CANVAS_H

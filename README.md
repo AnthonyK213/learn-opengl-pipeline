@@ -1,3 +1,3 @@
-# Qt Shader Test
-A simple Phong shading implementation test from scratch in Qt. Thanks to [Dmitry V. Sokolov](https://github.com/ssloy).
-![bunny](./img/bunny.png)
+# Learn OpenGL Pipeline
+A simple pipeline with Phong shading implementation from scratch in Qt. Thanks to [Dmitry V. Sokolov](https://github.com/ssloy).
+![bunny](./doc/bunny.png)

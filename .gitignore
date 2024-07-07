@@ -76,5 +76,7 @@ release/
 *.exe
 
 build/
+out/
 .vscode/
 .vs/
+.cache/
